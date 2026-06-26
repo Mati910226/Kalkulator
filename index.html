@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Kalkulator mieszania żywic</title>
 
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="theme-color" content="#1e3c72">
+
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js");
+}
+</script>
+
 <style>
 * {
     box-sizing: border-box;
@@ -211,7 +222,6 @@ function calc() {
             mass = amount / 1000;
         }
 
-        // normalizacja (największy = 100%)
         const maxVal = Math.max(A, B, C);
         if (maxVal === 0) throw "Brak danych";
 

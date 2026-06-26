@@ -9,6 +9,7 @@
   "name": "Kalkulator mieszania \uc0\u380 ywic",\
   "short_name": "\uc0\u379 ywice",\
   "start_url": "./index.html",\
+  "scope": "./",\
   "display": "standalone",\
   "background_color": "#1e3c72",\
   "theme_color": "#1e3c72",\
@@ -16,7 +17,8 @@
     \{\
       "src": "icon.png",\
       "sizes": "512x512",\
-      "type": "image/png"\
+      "type": "image/png",\
+      "purpose": "any maskable"\
     \}\
   ]\
 \}}
