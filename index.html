@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Kalkulator mieszania żywic</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    overflow-x: hidden;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 14px;
+}
+
+.card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.14);
+    backdrop-filter: blur(16px);
+    border-radius: 22px;
+    padding: 18px;
+    color: white;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+}
+
+h1 {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 14px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    gap: 10px;
+}
+
+.label {
+    width: 110px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+input, select {
+    flex: 1;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+}
+
+button {
+    width: 100%;
+    padding: 16px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+}
+
+.calc {
+    background: #00c853;
+}
+
+.reset {
+    background: #ff5252;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.result {
+    margin-top: 14px;
+    padding: 12px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 14px;
+    white-space: pre-line;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.error {
+    margin-top: 10px;
+    color: #ff6b6b;
+    text-align: center;
+    font-size: 13px;
+}
+
+.hidden {
+    display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <h1>🧪 Kalkulator mieszania żywic</h1>
+
+    <div class="row">
+        <div class="label">Jednostka</div>
+        <select id="unit">
+            <option value="kg">Kilogramy</option>
+            <option value="g">Gramy</option>
+            <option value="l">Litry</option>
+        </select>
+    </div>
+
+    <div class="row">
+        <div class="label">Ilość</div>
+        <input id="amount" placeholder="np. 10">
+    </div>
+
+    <div class="row" id="densityRow">
+        <div class="label">Gęstość</div>
+        <input id="density" placeholder="tylko dla litrów">
+    </div>
+
+    <div class="row">
+        <div class="label">A</div>
+        <input id="A" placeholder="np. 500">
+    </div>
+
+    <div class="row">
+        <div class="label">B</div>
+        <input id="B" placeholder="np. 250">
+    </div>
+
+    <div class="row">
+        <div class="label">C</div>
+        <input id="C" placeholder="opcjonalnie">
+    </div>
+
+    <button class="calc" onclick="calc()">OBLICZ</button>
+    <button class="reset" onclick="resetForm()">ZERUJ</button>
+
+    <div class="result" id="out"></div>
+    <div class="error" id="err"></div>
+
+</div>
+
+<script>
+
+const unit = document.getElementById("unit");
+const densityRow = document.getElementById("densityRow");
+
+function toggleDensity() {
+    if (unit.value === "l") {
+        densityRow.style.display = "flex";
+    } else {
+        densityRow.style.display = "none";
+        document.getElementById("density").value = "";
+    }
+}
+
+unit.addEventListener("change", toggleDensity);
+toggleDensity();
+
+function calc() {
+    const out = document.getElementById("out");
+    const err = document.getElementById("err");
+
+    out.innerText = "";
+    err.innerText = "";
+
+    try {
+        const type = unit.value;
+        const amount = parseFloat(document.getElementById("amount").value.replace(",", "."));
+
+        let A = parseFloat(document.getElementById("A").value.replace(",", "."));
+        let B = parseFloat(document.getElementById("B").value.replace(",", "."));
+
+        const Craw = document.getElementById("C").value.replace(",", ".");
+        let C = Craw.trim() === "" ? 0 : parseFloat(Craw);
+
+        if (isNaN(amount) || isNaN(A) || isNaN(B)) {
+            throw "Uzupełnij ilość, A i B";
+        }
+
+        let mass;
+
+        if (type === "l") {
+            const d = parseFloat(document.getElementById("density").value.replace(",", "."));
+            if (isNaN(d)) throw "Brak gęstości";
+            mass = amount * d;
+        } else if (type === "kg") {
+            mass = amount;
+        } else {
+            mass = amount / 1000;
+        }
+
+        // normalizacja (największy = 100%)
+        const maxVal = Math.max(A, B, C);
+        if (maxVal === 0) throw "Brak danych";
+
+        A = A / maxVal;
+        B = B / maxVal;
+        C = C / maxVal;
+
+        const den = (A + B) + (C > 0 ? C * (A + B) : 0);
+        if (den === 0) throw "Błąd proporcji";
+
+        const mA = mass / den;
+        const mB = mA * B;
+        const mC = C > 0 ? (mA + mB) * C : 0;
+
+        const sum = mA + mB + mC;
+
+        out.innerText =
+`📦 Masa całkowita: ${mass.toFixed(2)} kg
+
+A: ${mA.toFixed(2)} kg
+B: ${mB.toFixed(2)} kg
+C: ${C > 0 ? mC.toFixed(2) + " kg" : "—"}
+
+🔢 Suma: ${sum.toFixed(2)} kg`;
+
+    } catch (e) {
+        err.innerText = e;
+    }
+}
+
+function resetForm() {
+    ["amount","density","A","B","C"].forEach(id => {
+        document.getElementById(id).value = "";
+    });
+
+    document.getElementById("out").innerText = "";
+    document.getElementById("err").innerText = "";
+}
+
+</script>
+
+</body>
+</html>
