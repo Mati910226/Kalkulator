@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Kalkulator JMF</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2f7df6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JMF">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="icon" type="image/png" sizes="92x92" href="favicon-92.png">
+
+<style>
+* { box-sizing: border-box; }
+
+:root {
+    --bg: #f2f2f2;
+    --card: #ffffff;
+    --text: #111;
+    --muted: #666;
+    --input: #ffffff;
+    --border: #d0d0d0;
+    --soft: #eeeeee;
+    --blue: #2f7df6;
+    --red: #d64545;
+}
+
+body.dark {
+    --bg: #0f1115;
+    --card: #1b1d22;
+    --text: #f5f5f5;
+    --muted: #aaa;
+    --input: #111318;
+    --border: #333842;
+    --soft: #252832;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.card {
+    max-width: 430px;
+    margin: auto;
+    background: var(--card);
+    padding: 20px;
+    border-radius: 22px;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 6px;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+h3 { margin-top: 0; }
+
+.segment {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0 18px;
+}
+
+.segment button {
+    flex: 1;
+    margin: 0;
+    padding: 11px 8px;
+    font-size: 14px;
+    border-radius: 14px;
+    background: var(--soft);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.segment button.active {
+    background: var(--blue);
+    color: white;
+    border-color: var(--blue);
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 13px;
+    margin-top: 5px;
+    font-size: 17px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--input);
+    color: var(--text);
+}
+
+button {
+    width: 100%;
+    margin-top: 14px;
+    padding: 14px;
+    font-size: 18px;
+    border: none;
+    border-radius: 16px;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-primary { background: var(--blue); }
+.btn-clear { background: var(--red); }
+
+.info {
+    background: var(--soft);
+    padding: 12px;
+    border-radius: 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+}
+
+.tile {
+    background: var(--soft);
+    padding: 16px;
+    border-radius: 18px;
+    margin-top: 10px;
+    border-left: 7px solid var(--blue);
+}
+
+.tile.a { border-left-color: #2f7df6; }
+.tile.b { border-left-color: #22a06b; }
+.tile.c { border-left-color: #e0a800; }
+.tile.sum { border-left-color: #d64545; }
+
+.tile span {
+    display: block;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.tile strong {
+    display: block;
+    font-size: 30px;
+    margin-top: 4px;
+}
+
+.footer-theme {
+    margin-top: 26px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.version {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2>Kalkulator JMF</h2>
+    <div class="subtitle">Mieszanie żywic i utwardzaczy</div>
+
+    <div class="segment">
+        <button id="btnTryb1" onclick="ustawTryb(1)">Masa całkowita</button>
+        <button id="btnTryb2" onclick="ustawTryb(2)">Wg składnika A</button>
+        <button id="btnTryb3" onclick="ustawTryb(3)">Wg składnika B</button>
+    </div>
+
+    <h3 id="tytulTrybu">Masa całkowita</h3>
+
+    <label id="labelIlosc">Ilość końcowa</label>
+    <input id="ilosc" type="text" inputmode="decimal">
+
+    <label>Jednostka</label>
+    <div class="segment" id="jednostki"></div>
+
+    <div id="gestoscBox" style="display:none;">
+        <label>Gęstość [g/cm³]</label>
+        <input id="gestosc" type="text" inputmode="decimal" placeholder="Podaj gęstość w g/cm³">
+    </div>
+
+    <h3 style="margin-top:20px;">Receptura</h3>
+
+    <label>A</label>
+    <input id="propA" type="text" inputmode="decimal">
+
+    <label>B</label>
+    <input id="propB" type="text" inputmode="decimal">
+
+    <label>C (opcjonalnie)</label>
+    <input id="propC" type="text" inputmode="decimal">
+
+    <button class="btn-primary" onclick="oblicz()">Oblicz</button>
+    <button class="btn-clear" onclick="wyczysc()">Wyczyść</button>
+
+    <div id="wynik"></div>
+
+    <div class="footer-theme">
+        <h3>Wygląd</h3>
+        <div class="segment">
+            <button id="themeAuto" onclick="ustawMotyw('auto')">Auto</button>
+            <button id="themeLight" onclick="ustawMotyw('light')">Jasny</button>
+            <button id="themeDark" onclick="ustawMotyw('dark')">Ciemny</button>
+        </div>
+    </div>
+
+    <div class="version">Kalkulator JMF · wersja 1.0</div>
+</div>
+
+<script>
+let tryb = 1;
+let jednostka = "kg";
+let motyw = localStorage.getItem("motyw") || "auto";
+
+function haptic(ms = 10) {
+    if ("vibrate" in navigator) {
+        navigator.vibrate(ms);
+    }
+}
+
+function liczba(id) {
+    let v = document.getElementById(id).value.trim().replace(",", ".");
+    return parseFloat(v) || 0;
+}
+
+function ustawMotyw(nowy) {
+    haptic();
+    motyw = nowy;
+    localStorage.setItem("motyw", motyw);
+    zastosujMotyw();
+}
+
+function zastosujMotyw() {
+    document.body.classList.remove("dark");
+
+    if (motyw === "dark") document.body.classList.add("dark");
+
+    if (motyw === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.body.classList.add("dark");
+    }
+
+    document.getElementById("themeAuto").classList.toggle("active", motyw === "auto");
+    document.getElementById("themeLight").classList.toggle("active", motyw === "light");
+    document.getElementById("themeDark").classList.toggle("active", motyw === "dark");
+}
+
+function ustawTryb(n) {
+    haptic();
+    tryb = n;
+    jednostka = "kg";
+
+    document.getElementById("btnTryb1").classList.toggle("active", tryb === 1);
+    document.getElementById("btnTryb2").classList.toggle("active", tryb === 2);
+    document.getElementById("btnTryb3").classList.toggle("active", tryb === 3);
+
+    if (tryb === 1) {
+        document.getElementById("tytulTrybu").innerText = "Masa całkowita";
+        document.getElementById("labelIlosc").innerText = "Ilość końcowa";
+    }
+
+    if (tryb === 2) {
+        document.getElementById("tytulTrybu").innerText = "Wg składnika A";
+        document.getElementById("labelIlosc").innerText = "Masa składnika A";
+    }
+
+    if (tryb === 3) {
+        document.getElementById("tytulTrybu").innerText = "Wg składnika B";
+        document.getElementById("labelIlosc").innerText = "Masa składnika B";
+    }
+
+    rysujJednostki();
+    document.getElementById("wynik").innerHTML = "";
+}
+
+function rysujJednostki() {
+    let box = document.getElementById("jednostki");
+    let opcje = tryb === 1 ? ["kg", "g", "l"] : ["kg", "g"];
+
+    box.innerHTML = "";
+
+    opcje.forEach(j => {
+        let btn = document.createElement("button");
+        btn.innerText = j === "l" ? "litry" : j;
+        btn.classList.toggle("active", jednostka === j);
+        btn.onclick = () => {
+            haptic();
+            jednostka = j;
+            rysujJednostki();
+            pokazGestosc();
+            ustawPlaceholderIlosci();
+        };
+        box.appendChild(btn);
+    });
+
+    pokazGestosc();
+    ustawPlaceholderIlosci();
+}
+
+function ustawPlaceholderIlosci() {
+    const pole = document.getElementById("ilosc");
+
+    if (jednostka === "kg") pole.placeholder = "Podaj masę w kg";
+    if (jednostka === "g") pole.placeholder = "Podaj masę w g";
+    if (jednostka === "l") pole.placeholder = "Podaj objętość w l";
+}
+
+function pokazGestosc() {
+    document.getElementById("gestoscBox").style.display =
+        tryb === 1 && jednostka === "l" ? "block" : "none";
+}
+
+function formatuj(kg) {
+    if (jednostka === "g") return Math.round(kg * 1000) + " g";
+    return kg.toFixed(3).replace(".", ",") + " kg";
+}
+
+function pobierzMaseKg() {
+    let ilosc = liczba("ilosc");
+    let gestosc = liczba("gestosc");
+
+    if (ilosc <= 0) return null;
+
+    if (jednostka === "kg") return ilosc;
+    if (jednostka === "g") return ilosc / 1000;
+
+    if (jednostka === "l" && tryb === 1) {
+        if (gestosc <= 0) return null;
+        return ilosc * gestosc;
+    }
+
+    return null;
+}
+
+function oblicz() {
+    haptic(20);
+
+    let masaKg = pobierzMaseKg();
+
+    let Araw = liczba("propA");
+    let Braw = liczba("propB");
+    let Craw = liczba("propC");
+
+    if (masaKg === null || Araw <= 0 || Braw <= 0) {
+        document.getElementById("wynik").innerHTML =
+            '<div class="info">Uzupełnij masę oraz recepturę A i B.</div>';
+        return;
+    }
+
+    let maxProp = Math.max(Araw, Braw, Craw || 0);
+
+    let Aproc = Araw / maxProp * 100;
+    let Bproc = Braw / maxProp * 100;
+    let Cproc = Craw > 0 ? Craw / maxProp * 100 : 0;
+
+    let BdoA = Braw / Araw;
+    let AdoB = Araw / Braw;
+    let CdoAB = Craw > 0 ? Craw / maxProp : 0;
+
+    let A, B, C;
+
+    if (tryb === 1) {
+        A = masaKg / ((1 + BdoA) * (1 + CdoAB));
+        B = A * BdoA;
+    }
+
+    if (tryb === 2) {
+        A = masaKg;
+        B = A * BdoA;
+    }
+
+    if (tryb === 3) {
+        B = masaKg;
+        A = B * AdoB;
+    }
+
+    C = (A + B) * CdoAB;
+    let suma = A + B + C;
+
+    let html = `
+        <div class="info">
+            <b>Receptura po przeliczeniu:</b><br>
+            A: ${Aproc.toFixed(2).replace(".", ",")}%<br>
+            B: ${Bproc.toFixed(2).replace(".", ",")}%
+            ${Craw > 0 ? "<br>C: " + Cproc.toFixed(2).replace(".", ",") + "%" : ""}
+        </div>
+
+        <div class="tile a"><span>Składnik A</span><strong>${formatuj(A)}</strong></div>
+        <div class="tile b"><span>Składnik B</span><strong>${formatuj(B)}</strong></div>
+        ${Craw > 0 ? `<div class="tile c"><span>Składnik C</span><strong>${formatuj(C)}</strong></div>` : ""}
+        <div class="tile sum"><span>Masa całkowita</span><strong>${formatuj(suma)}</strong></div>
+    `;
+
+    document.getElementById("wynik").innerHTML = html;
+}
+
+function wyczysc() {
+    haptic(15);
+
+    ["ilosc", "gestosc", "propA", "propB", "propC"].forEach(id => {
+        document.getElementById(id).value = "";
+    });
+
+    document.getElementById("wynik").innerHTML = "";
+}
+
+zastosujMotyw();
+ustawTryb(1);
+
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", zastosujMotyw);
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+</body>
+</html>
