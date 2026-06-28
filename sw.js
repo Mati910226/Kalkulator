@@ -5,43 +5,48 @@
 \paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\fs24 \cf0 const CACHE_NAME = "kalkulator-jmf-v1";\
+\f0\fs24 \cf0 const CACHE_NAME = "kalkulator-jmf-v3";\
 \
 const FILES_TO_CACHE = [\
-    "./index.html",\
-    "./index.html",\
-    "./manifest.json",\
-    "./icon-192.png",\
-    "./icon-512.png",\
-    "./apple-touch-icon.png",\
-    "./favicon.png",\
-    "./favicon-92.png"\
+  "./",\
+  "./index.html",\
+  "./manifest.json",\
+  "./icon-192.png",\
+  "./icon-512.png",\
+  "./apple-touch-icon.png",\
+  "./favicon.png",\
+  "./favicon-92.png"\
 ];\
 \
 self.addEventListener("install", event => \{\
-    event.waitUntil(\
-        caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))\
-    );\
-    self.skipWaiting();\
+  event.waitUntil(\
+    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))\
+  );\
+  self.skipWaiting();\
 \});\
 \
 self.addEventListener("activate", event => \{\
-    event.waitUntil(\
-        caches.keys().then(keys => \{\
-            return Promise.all(\
-                keys\
-                    .filter(key => key !== CACHE_NAME)\
-                    .map(key => caches.delete(key))\
-            );\
-        \})\
-    );\
-    self.clients.claim();\
+  event.waitUntil(\
+    caches.keys().then(keys =>\
+      Promise.all(keys.map(key => \{\
+        if (key !== CACHE_NAME) return caches.delete(key);\
+      \}))\
+    )\
+  );\
+  self.clients.claim();\
 \});\
 \
 self.addEventListener("fetch", event => \{\
+  if (event.request.mode === "navigate") \{\
     event.respondWith(\
-        caches.match(event.request).then(response => \{\
-            return response || fetch(event.request);\
-        \})\
+      fetch(event.request).catch(() => caches.match("./index.html"))\
     );\
+    return;\
+  \}\
+\
+  event.respondWith(\
+    caches.match(event.request).then(response => \{\
+      return response || fetch(event.request);\
+    \})\
+  );\
 \});}
