@@ -8,7 +8,6 @@
 \f0\fs24 \cf0 const CACHE_NAME = "kalkulator-jmf-v1";\
 \
 const FILES_TO_CACHE = [\
-    "./",\
     "./index.html",\
     "./manifest.json",\
     "./icon-192.png",\
